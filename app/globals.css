@@ -1,0 +1,12 @@
+@import "tailwindcss";
+@config "../tailwind.config.ts";
+
+@layer base {
+  * {
+    @apply border-border-default;
+  }
+
+  body {
+    @apply bg-bg-primary text-text-primary;
+  }
+}
