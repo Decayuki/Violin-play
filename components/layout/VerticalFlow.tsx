@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils/cn";
 import { Music2, Mic2, PlayCircle, Layers, Maximize2, Minimize2, GripVertical } from "lucide-react";
 import SongCard from "@/components/ui/SongCard";
 import PdfViewer from "@/components/ui/PdfViewer";
+import AudioPlayer from '@/components/player/AudioPlayer';
 
 // Types
 interface Song {
@@ -29,17 +30,30 @@ export default function VerticalFlow({ songs }: VerticalFlowProps) {
     const [selectedLevel, setSelectedLevel] = useState<number | null>(null);
     const [selectedSong, setSelectedSong] = useState<Song | null>(null);
     const [selectedMode, setSelectedMode] = useState<"backtrack" | "cover" | null>(null);
+
+    // Filters
+    const [filterBacktrack, setFilterBacktrack] = useState(false);
+    const [filterCover, setFilterCover] = useState(false);
+
     const [isPlaying, setIsPlaying] = useState(false);
     const [isAutoScrollEnabled, setIsAutoScrollEnabled] = useState(true);
     const [scrollSpeed, setScrollSpeed] = useState(0.5);
+    const [playbackRate, setPlaybackRate] = useState(1);
 
     // Player Resizing State (Width of the Player section)
     const [playerWidth, setPlayerWidth] = useState(400); // Initial width in px
     const isResizing = useRef(false);
 
-    // Filter songs based on selected level
+    // Filter songs based on selected level and active filters
     const filteredSongs = selectedLevel
-        ? songs.filter(s => s.base_difficulty === selectedLevel)
+        ? songs.filter(s => {
+            const levelMatch = s.base_difficulty === selectedLevel;
+            const pdfMatch = !!s.pdf_url; // Always require PDF
+            const backtrackMatch = filterBacktrack ? !!s.backtrack_url : true;
+            const coverMatch = filterCover ? !!s.cover_url : true;
+
+            return levelMatch && pdfMatch && backtrackMatch && coverMatch;
+        })
         : [];
 
     const handleLevelSelect = (level: number) => {
@@ -103,7 +117,7 @@ export default function VerticalFlow({ songs }: VerticalFlowProps) {
     };
 
     return (
-        <div className="flex w-full h-[calc(100vh-4rem)] overflow-hidden bg-bg-primary">
+        <div className="flex w-full h-[calc(100vh-4rem)] overflow-hidden bg-transparent">
 
             {/* PANEL 1: LEVEL SELECTION */}
             <Panel
@@ -112,16 +126,17 @@ export default function VerticalFlow({ songs }: VerticalFlowProps) {
                 onClick={() => setActivePanel(0)}
                 title="DIFFICULTY"
                 icon={<Layers className="w-6 h-6" />}
+                headerImage="/vignettes/tryBandeauSlider.png"
             >
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-8 max-w-4xl mx-auto w-full">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-8 max-w-4xl mx-auto w-full h-full content-center">
                     {[1, 2, 3, 4].map((level) => (
                         <button
                             key={level}
                             onClick={(e) => { e.stopPropagation(); handleLevelSelect(level); }}
                             className={`
                 group relative flex flex-col items-center justify-center h-48 border border-border-subtle 
-                hover:border-text-primary transition-all duration-300 bg-bg-secondary/50 backdrop-blur-sm
-                ${selectedLevel === level ? 'border-text-primary bg-bg-secondary' : ''}
+                hover:border-text-primary transition-all duration-300 bg-bg-secondary/10 backdrop-blur-md
+                ${selectedLevel === level ? 'border-text-primary bg-bg-secondary/40 shadow-[0_0_30px_rgba(212,175,55,0.1)]' : ''}
               `}
                         >
                             <span className="text-6xl font-mono font-bold text-border-strong group-hover:text-text-primary transition-colors">
@@ -143,8 +158,42 @@ export default function VerticalFlow({ songs }: VerticalFlowProps) {
                 title="SELECTION"
                 icon={<Music2 className="w-6 h-6" />}
                 disabled={!selectedLevel}
+                headerImage="/vignettes/tryBandeauSlider.png"
             >
                 <div className="h-full overflow-y-auto p-8">
+                    {/* Filter Toggles */}
+                    <div className="flex flex-wrap items-center justify-end gap-4 mb-6">
+                        <span className="text-xs font-mono text-text-muted uppercase tracking-widest mr-2">Filters:</span>
+
+                        {/* Backtrack Filter */}
+                        <button
+                            onClick={(e) => { e.stopPropagation(); setFilterBacktrack(!filterBacktrack); }}
+                            className={`
+                                flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold tracking-widest uppercase transition-all border
+                                ${filterBacktrack
+                                    ? 'bg-gold-primary/10 text-gold-primary border-gold-primary'
+                                    : 'bg-bg-tertiary text-text-secondary border-border-subtle hover:border-text-muted'}
+                            `}
+                        >
+                            <div className={`w-2 h-2 rounded-full ${filterBacktrack ? 'bg-gold-primary animate-pulse' : 'bg-text-muted'}`} />
+                            Backtrack
+                        </button>
+
+                        {/* Cover Filter */}
+                        <button
+                            onClick={(e) => { e.stopPropagation(); setFilterCover(!filterCover); }}
+                            className={`
+                                flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold tracking-widest uppercase transition-all border
+                                ${filterCover
+                                    ? 'bg-gold-primary/10 text-gold-primary border-gold-primary'
+                                    : 'bg-bg-tertiary text-text-secondary border-border-subtle hover:border-text-muted'}
+                            `}
+                        >
+                            <div className={`w-2 h-2 rounded-full ${filterCover ? 'bg-gold-primary animate-pulse' : 'bg-text-muted'}`} />
+                            Full Cover
+                        </button>
+                    </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-20">
                         {filteredSongs.map(song => (
                             <div key={song.id} onClick={(e) => { e.stopPropagation(); handleSongSelect(song); }} className="cursor-pointer">
@@ -168,6 +217,7 @@ export default function VerticalFlow({ songs }: VerticalFlowProps) {
                 title="MODE"
                 icon={<Mic2 className="w-6 h-6" />}
                 disabled={!selectedSong}
+                headerImage="/vignettes/tryBandeauSlider.png"
             >
                 <div className="flex flex-col md:flex-row gap-8 items-center justify-center h-full p-8">
                     <button
@@ -203,6 +253,7 @@ export default function VerticalFlow({ songs }: VerticalFlowProps) {
                 icon={<PlayCircle className="w-6 h-6" />}
                 disabled={!selectedMode}
                 isPlayerPanel={true}
+                headerImage="/vignettes/tryBandeauSlider.png"
             >
                 <div className="flex h-full w-full relative">
                     {/* Sheet Music Area (Left - Takes remaining space) */}
@@ -236,57 +287,42 @@ export default function VerticalFlow({ songs }: VerticalFlowProps) {
                         style={{ width: playerWidth }}
                         className="bg-bg-secondary border-l border-border-subtle relative flex flex-col h-full"
                     >
-                        <div className="flex-1 flex items-center justify-center p-8">
-                            <div className="text-center space-y-6 w-full">
-                                <div className={`
-                                    w-32 h-32 rounded-full border-2 flex items-center justify-center mx-auto transition-all duration-500
-                                    ${isPlaying ? 'border-text-primary animate-pulse shadow-[0_0_30px_rgba(255,255,255,0.2)]' : 'border-border-subtle'}
-                                `}>
-                                    {isPlaying ? (
-                                        <div className="flex gap-2">
-                                            <div className="w-3 h-12 bg-text-primary rounded-full" />
-                                            <div className="w-3 h-12 bg-text-primary rounded-full" />
+                        <div
+                            className="transition-all duration-300 ease-in-out border-l border-border-subtle bg-bg-secondary/30 backdrop-blur-sm relative"
+                            style={{ width: `${playerWidth}px` }} // Changed to px as per original playerWidth state
+                        >
+                            {/* Resize Handle (Left side of player panel) */}
+                            <div
+                                className="absolute left-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-text-primary z-20 transition-colors" // Changed hover color to match existing
+                                onMouseDown={startResizing} // Changed to existing startResizing handler
+                            />
+
+                            <div className="h-full flex flex-col p-6 gap-6">
+                                <div className="flex-1 flex items-center justify-center">
+                                    {/* Visualizer Placeholder or Album Art */}
+                                    <div className="w-full aspect-square max-w-xs bg-bg-tertiary rounded-2xl border border-white/5 shadow-inner flex items-center justify-center relative overflow-hidden group">
+                                        {/* Placeholder for now since we don't have album art images in DB yet */}
+                                        <div className="absolute inset-0 bg-gradient-to-br from-bg-secondary to-bg-primary opacity-50" />
+                                        <Music2 className="w-16 h-16 text-gold-primary/20" />
+
+                                        <div className="absolute inset-0 bg-gradient-to-t from-bg-primary/80 to-transparent" />
+                                        <div className="absolute bottom-4 left-4 right-4">
+                                            <h3 className="text-lg font-bold text-white truncate">{selectedSong?.title}</h3>
+                                            <p className="text-sm text-text-secondary">{selectedSong?.composer}</p>
                                         </div>
-                                    ) : (
-                                        <PlayCircle className="w-16 h-16 text-text-primary" />
-                                    )}
-                                </div>
-                                <div>
-                                    <h2 className="text-2xl font-bold tracking-widest">
-                                        {isPlaying ? "PLAYING" : "PLAYER READY"}
-                                    </h2>
-                                    <p className="font-mono text-sm text-text-secondary mt-2">
-                                        {selectedSong?.title}
-                                    </p>
-                                    <span className="inline-block mt-2 px-2 py-1 border border-border-subtle text-xs font-mono text-text-muted uppercase">
-                                        {selectedMode} MODE
-                                    </span>
-                                </div>
-
-                                {/* Placeholder Controls */}
-                                <div className="flex justify-center gap-8 pt-8">
-                                    <div className="w-12 h-12 rounded-full border border-border-subtle flex items-center justify-center hover:bg-bg-tertiary cursor-pointer">
-                                        <span className="text-xs font-mono">RST</span>
-                                    </div>
-                                    <div
-                                        onClick={togglePlay}
-                                        className="w-16 h-16 rounded-full bg-text-primary text-bg-primary flex items-center justify-center hover:opacity-90 cursor-pointer transition-transform active:scale-95"
-                                    >
-                                        {isPlaying ? (
-                                            <div className="flex gap-1">
-                                                <div className="w-2 h-6 bg-bg-primary rounded-full" />
-                                                <div className="w-2 h-6 bg-bg-primary rounded-full" />
-                                            </div>
-                                        ) : (
-                                            <PlayCircle className="w-8 h-8 fill-current" />
-                                        )}
-                                    </div>
-                                    <div className="w-12 h-12 rounded-full border border-border-subtle flex items-center justify-center hover:bg-bg-tertiary cursor-pointer">
-                                        <span className="text-xs font-mono">LOOP</span>
                                     </div>
                                 </div>
 
-                                {/* Auto-scroll Controls */}
+                                {/* Audio Player Component */}
+                                <AudioPlayer
+                                    url={selectedMode === 'backtrack' ? selectedSong?.backtrack_url || null : selectedSong?.cover_url || null}
+                                    isPlaying={isPlaying}
+                                    onPlayStateChange={setIsPlaying}
+                                    playbackRate={playbackRate}
+                                    onPlaybackRateChange={setPlaybackRate}
+                                />
+
+                                {/* Auto-scroll Controls (Moved from original player UI) */}
                                 <div className="mt-8 pt-8 border-t border-border-subtle">
                                     <div className="flex items-center justify-between mb-4">
                                         <span className="text-sm font-mono text-text-secondary">AUTO-SCROLL</span>
@@ -345,7 +381,8 @@ function Panel({
     icon,
     children,
     disabled = false,
-    isPlayerPanel = false
+    isPlayerPanel = false,
+    headerImage
 }: {
     index: number;
     activePanel: number;
@@ -355,6 +392,7 @@ function Panel({
     children: React.ReactNode;
     disabled?: boolean;
     isPlayerPanel?: boolean;
+    headerImage?: string;
 }) {
     const isActive = activePanel === index;
     const isPlayerActive = activePanel === 3;
@@ -381,7 +419,7 @@ function Panel({
             `}
         >
             {/* Background Gradient */}
-            <div className="absolute inset-0 bg-gradient-to-b from-bg-secondary to-bg-primary -z-10" />
+            <div className="absolute inset-0 bg-gradient-to-b from-bg-secondary/20 to-bg-primary/20 -z-10" />
 
             {/* Active Content */}
             <div className={`
@@ -391,11 +429,24 @@ function Panel({
                 <div className="h-full flex flex-col">
                     {/* Header - Hide in Player Panel to maximize space? Or keep small? Keeping for consistency but maybe smaller padding */}
                     <div className={`
-                        border-b border-border-subtle flex items-center justify-between
+                        border-b border-border-subtle flex items-center justify-between relative overflow-hidden
                         ${isPlayerPanel ? 'p-2' : 'p-8'}
                     `}>
-                        <h2 className={`font-bold tracking-tighter ${isPlayerPanel ? 'text-sm' : 'text-3xl'}`}>{title}</h2>
-                        <div className="text-text-muted">{isPlayerPanel ? <Minimize2 className="w-4 h-4" /> : icon}</div>
+                        {/* Header Image Background */}
+                        {headerImage && (
+                            <>
+                                <div
+                                    className="absolute inset-0 bg-cover bg-center opacity-50"
+                                    style={{ backgroundImage: `url('${headerImage}')` }}
+                                />
+                                <div className="absolute inset-0 bg-black/40" /> {/* Overlay for text readability */}
+                            </>
+                        )}
+
+                        <div className="relative z-10 flex items-center justify-between w-full">
+                            <h2 className={`font-bold tracking-tighter ${isPlayerPanel ? 'text-sm' : 'text-3xl'}`}>{title}</h2>
+                            <div className="text-text-muted">{isPlayerPanel ? <Minimize2 className="w-4 h-4" /> : icon}</div>
+                        </div>
                     </div>
                     <div className="flex-1 overflow-hidden relative">
                         {children}
@@ -408,7 +459,8 @@ function Panel({
                 absolute inset-0 flex items-center justify-center transition-opacity duration-300
                 ${isActive ? 'opacity-0 invisible' : 'opacity-100 visible'}
             `}>
-                <div className="rotate-180" style={{ writingMode: 'vertical-rl' }}>
+
+                <div className="rotate-180 relative z-10" style={{ writingMode: 'vertical-rl' }}>
                     <span className="text-xl font-bold tracking-widest uppercase text-text-muted whitespace-nowrap flex items-center gap-4">
                         {title}
                         <span className="rotate-90">{icon}</span>

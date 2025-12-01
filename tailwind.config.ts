@@ -8,27 +8,34 @@ const config: Config = {
     theme: {
         extend: {
             colors: {
-                // Backgrounds
-                bg: {
-                    primary: '#000000',      // True Black
-                    secondary: '#050505',    // Almost Black (Blocks)
-                    tertiary: '#111111',     // Hover states
-                    elevated: '#111111',     // Modals
-                },
-
-                // Borders
                 border: {
-                    subtle: '#27272a',       // Zinc 800 - Grid lines
-                    default: '#3f3f46',      // Zinc 700
-                    strong: '#52525b',       // Zinc 600
+                    DEFAULT: "hsl(var(--border))",
+                    subtle: '#27272a',
+                    default: '#3f3f46',
+                    strong: '#52525b',
                 },
+                input: "hsl(var(--input))",
+                ring: "hsl(var(--ring))",
+                background: "hsl(var(--background))",
+                foreground: "hsl(var(--foreground))",
 
-                // Text
+                // Custom Palette
+                bg: {
+                    primary: '#0a0a0a',   // Almost black
+                    secondary: '#121212', // Dark grey
+                    tertiary: '#1E1E1E',  // Lighter grey
+                },
                 text: {
-                    primary: '#ffffff',      // Pure White
-                    secondary: '#a1a1aa',    // Zinc 400
+                    primary: '#FFFFFF',
+                    secondary: '#A1A1AA',
                     muted: '#52525b',        // Zinc 600
                     inverse: '#000000',      // Black
+                },
+                gold: {
+                    primary: '#D4AF37',   // Classic Gold
+                    light: '#F4C430',     // Bright Gold
+                    dark: '#AA6C39',      // Bronze/Dark Gold
+                    subtle: 'rgba(212, 175, 55, 0.1)', // Gold tint
                 },
 
                 // Accent (White/Amber)
