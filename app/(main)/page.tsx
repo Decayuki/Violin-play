@@ -50,7 +50,7 @@ export default async function HomePage({
             <section className="relative z-20 border-t border-gold-subtle/20 min-h-screen pointer-events-none">
 
                 {/* HERO BANNER with BG1 */}
-                <div className="relative w-full flex flex-col justify-center overflow-hidden pointer-events-auto pt-40 pb-20">
+                <div className="relative w-full flex flex-col justify-center overflow-hidden pointer-events-auto pt-40 pb-10">
                     {/* Background Image */}
                     <div
                         className="absolute inset-0 bg-cover bg-center bg-no-repeat bg-fixed opacity-40"
@@ -74,7 +74,7 @@ export default async function HomePage({
                     </div>
                 </div>
 
-                <div className="container mx-auto px-4 py-20">
+                <div className="container mx-auto px-4 py-10">
                     {/* Lessons */}
                     <div>
                         <h3 className="text-xl font-mono text-text-secondary mb-6 border-l-2 border-gold-primary pl-4">
