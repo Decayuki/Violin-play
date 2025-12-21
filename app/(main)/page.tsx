@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
 export default async function HomePage({
     searchParams,
 }: {
-    searchParams: { [key: string]: string | string[] | undefined }
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
     const cookieStore = await cookies();
     const supabase = createClient(cookieStore);

@@ -2,10 +2,16 @@
 
 import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils/cn";
-import { Music2, Mic2, PlayCircle, Layers, Maximize2, Minimize2, GripVertical } from "lucide-react";
+import { GripVertical, ChevronLeft, ChevronRight, Music2, Maximize2, Minimize2, Mic2, PlayCircle, Layers, Mic, MicOff, Search, Heart } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
 import SongCard from "@/components/ui/SongCard";
 import PdfViewer from "@/components/ui/PdfViewer";
-import AudioPlayer from '@/components/player/AudioPlayer';
+import AudioPlayer from '../player/AudioPlayer';
+import MiniPlayer from '../player/MiniPlayer';
+import TunerWidget from '../tools/TunerWidget';
+import { SearchControls } from '../ui/SearchControls';
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
+import { useTuner } from '@/hooks/useTuner';
 
 // Types
 interface Song {
@@ -35,13 +41,139 @@ export default function VerticalFlow({ songs }: VerticalFlowProps) {
     const [filterBacktrack, setFilterBacktrack] = useState(false);
     const [filterCover, setFilterCover] = useState(false);
 
+    // Search State
+    const [searchQuery, setSearchQuery] = useState("");
+    const [activeFilter, setActiveFilter] = useState<'all' | 'title' | 'author'>('all');
+
     const [isPlaying, setIsPlaying] = useState(false);
     const [isAutoScrollEnabled, setIsAutoScrollEnabled] = useState(true);
     const [scrollSpeed, setScrollSpeed] = useState(0.5);
-    const [playbackRate, setPlaybackRate] = useState(1);
-
     // Player Resizing State (Width of the Player section)
     const [playerWidth, setPlayerWidth] = useState(400); // Initial width in px
+    const [selectionWidth, setSelectionWidth] = useState(350); // Initial width for selection panel
+
+
+    const [playbackRate, setPlaybackRate] = useState(1);
+    const [isFocusMode, setIsFocusMode] = useState(false);
+
+    // Derived state for MiniPlayer
+    const showMiniPlayer = playerWidth < 320 || isFocusMode;
+
+    // ... inside component
+
+    // Favorites State
+    const [favorites, setFavorites] = useState<Set<string>>(new Set());
+    const [userId, setUserId] = useState<string | undefined>(undefined);
+    const supabase = createClient();
+
+    // Fetch favorites and user on load
+    useEffect(() => {
+        const fetchUserData = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
+            setUserId(user.id);
+
+            const { data, error } = await supabase
+                .from('favorites')
+                .select('song_id')
+                .eq('user_id', user.id);
+
+            if (error) {
+                console.error('Error fetching favorites:', error);
+                return;
+            }
+
+            if (data) {
+                setFavorites(new Set(data.map(f => f.song_id)));
+            }
+        };
+
+        fetchUserData();
+    }, []);
+
+    // Tuner Hook
+    const { isActive: isTunerActive, note, cents, frequency, hasSignal, startTuner, stopTuner } = useTuner();
+
+    const toggleTuner = () => {
+        if (isTunerActive) stopTuner();
+        else startTuner();
+    };
+
+    const toggleFavorite = async (songId: string) => {
+        // Optimistic Update
+        setFavorites(prev => {
+            const next = new Set(prev);
+            if (next.has(songId)) next.delete(songId);
+            else next.add(songId);
+            return next;
+        });
+
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const isFavorite = favorites.has(songId); // State before toggle (wait, this might be tricky with closure)
+        // Better to check the Set *after* toggle? No, we need to know what action to take.
+        // Let's use the previous state logic or just check if it WAS in the set.
+
+        // Actually, since we already updated the state optimistically, we need to know if we added or removed.
+        // Let's check if it WAS there.
+        const wasFavorite = favorites.has(songId);
+
+        if (wasFavorite) {
+            // Remove
+            const { error } = await supabase
+                .from('favorites')
+                .delete()
+                .eq('user_id', user.id)
+                .eq('song_id', songId);
+
+            if (error) {
+                console.error('Error removing favorite:', error);
+                // Revert state if error
+                setFavorites(prev => {
+                    const next = new Set(prev);
+                    next.add(songId);
+                    return next;
+                });
+            }
+        } else {
+            // Add
+            const { error } = await supabase
+                .from('favorites')
+                .insert({ user_id: user.id, song_id: songId });
+
+            if (error) {
+                console.error('Error adding favorite:', error);
+                // Revert state if error
+                setFavorites(prev => {
+                    const next = new Set(prev);
+                    next.delete(songId);
+                    return next;
+                });
+            }
+        }
+    };
+
+    // Toggle Focus Mode
+    const toggleFocusMode = () => {
+        setIsFocusMode(!isFocusMode);
+        if (!isFocusMode) {
+            // Enter Focus Mode: Collapse panels
+            setSelectionWidth(0);
+            setPlayerWidth(0);
+        } else {
+            // Exit Focus Mode: Restore defaults
+            setSelectionWidth(350);
+            setPlayerWidth(450);
+        }
+    };
+
+    // Keyboard Shortcuts
+    useKeyboardShortcuts({
+        onPlayPause: () => setIsPlaying(prev => !prev),
+        onToggleFocus: toggleFocusMode,
+    });
     const isResizing = useRef(false);
 
     // Filter songs based on selected level and active filters
@@ -52,7 +184,19 @@ export default function VerticalFlow({ songs }: VerticalFlowProps) {
             const backtrackMatch = filterBacktrack ? !!s.backtrack_url : true;
             const coverMatch = filterCover ? !!s.cover_url : true;
 
-            return levelMatch && pdfMatch && backtrackMatch && coverMatch;
+            // Search Logic
+            let searchMatch = true;
+            if (searchQuery) {
+                const query = searchQuery.toLowerCase();
+                const titleMatch = s.title.toLowerCase().includes(query);
+                const authorMatch = s.composer?.toLowerCase().includes(query) || false;
+
+                if (activeFilter === 'title') searchMatch = titleMatch;
+                else if (activeFilter === 'author') searchMatch = authorMatch;
+                else searchMatch = titleMatch || authorMatch;
+            }
+
+            return levelMatch && pdfMatch && backtrackMatch && coverMatch && searchMatch;
         })
         : [];
 
@@ -161,6 +305,14 @@ export default function VerticalFlow({ songs }: VerticalFlowProps) {
                 headerImage="/vignettes/tryBandeauSlider.png"
             >
                 <div className="h-full overflow-y-auto p-8">
+                    {/* Search Controls */}
+                    <SearchControls
+                        searchQuery={searchQuery}
+                        onSearchChange={setSearchQuery}
+                        activeFilter={activeFilter}
+                        onFilterChange={setActiveFilter}
+                    />
+
                     {/* Filter Toggles */}
                     <div className="flex flex-wrap items-center justify-end gap-4 mb-6">
                         <span className="text-xs font-mono text-text-muted uppercase tracking-widest mr-2">Filters:</span>
@@ -196,8 +348,16 @@ export default function VerticalFlow({ songs }: VerticalFlowProps) {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-20">
                         {filteredSongs.map(song => (
-                            <div key={song.id} onClick={(e) => { e.stopPropagation(); handleSongSelect(song); }} className="cursor-pointer">
-                                <SongCard song={song} />
+                            <div key={song.id} className="cursor-pointer">
+                                <SongCard
+                                    song={song}
+                                    onClick={() => handleSongSelect(song)}
+                                    isFavorite={favorites.has(song.id)}
+                                    onToggleFavorite={(e) => {
+                                        e.stopPropagation();
+                                        toggleFavorite(song.id);
+                                    }}
+                                />
                             </div>
                         ))}
                     </div>
@@ -262,6 +422,8 @@ export default function VerticalFlow({ songs }: VerticalFlowProps) {
                             <div className="w-full h-full">
                                 <PdfViewer
                                     url={selectedSong.pdf_url}
+                                    songId={selectedSong.id}
+                                    userId={userId}
                                     isPlaying={isPlaying}
                                     isAutoScrollEnabled={isAutoScrollEnabled}
                                     scrollSpeed={scrollSpeed}
@@ -297,76 +459,112 @@ export default function VerticalFlow({ songs }: VerticalFlowProps) {
                                 onMouseDown={startResizing} // Changed to existing startResizing handler
                             />
 
-                            <div className="h-full flex flex-col p-6 gap-6">
-                                <div className="flex-1 flex items-center justify-center">
-                                    {/* Visualizer Placeholder or Album Art */}
-                                    <div className="w-full aspect-square max-w-xs bg-bg-tertiary rounded-2xl border border-white/5 shadow-inner flex items-center justify-center relative overflow-hidden group">
-                                        {/* Placeholder for now since we don't have album art images in DB yet */}
-                                        <div className="absolute inset-0 bg-gradient-to-br from-bg-secondary to-bg-primary opacity-50" />
-                                        <Music2 className="w-16 h-16 text-gold-primary/20" />
+                            <div className="h-full flex flex-col p-6 gap-6 overflow-y-auto scrollbar-hide">
+                                <div className="h-full flex flex-col">
+                                    {/* Tuner Widget (Integrated) */}
+                                    <TunerWidget
+                                        isActive={isTunerActive}
+                                        note={note}
+                                        cents={cents}
+                                        frequency={frequency}
+                                        hasSignal={hasSignal}
+                                        onToggle={toggleTuner}
+                                    />
 
-                                        <div className="absolute inset-0 bg-gradient-to-t from-bg-primary/80 to-transparent" />
-                                        <div className="absolute bottom-4 left-4 right-4">
-                                            <h3 className="text-lg font-bold text-white truncate">{selectedSong?.title}</h3>
-                                            <p className="text-sm text-text-secondary">{selectedSong?.composer}</p>
+                                    <div className="flex-1 overflow-y-auto p-8">
+                                        {/* Song Info */}
+                                        <div className="mb-8 text-center">
+                                            <h2 className="text-3xl font-bold tracking-tighter mb-2">{selectedSong?.title}</h2>
+                                            <p className="text-md text-text-secondary font-mono">{selectedSong?.composer}</p>
                                         </div>
+
+                                        {/* Audio Player Component */}
+                                        <AudioPlayer
+                                            url={selectedMode === 'backtrack' ? selectedSong?.backtrack_url || null : selectedSong?.cover_url || null}
+                                            coverUrl={selectedSong?.cover_url || null}
+                                            isPlaying={isPlaying}
+                                            onPlayStateChange={setIsPlaying}
+                                            playbackRate={playbackRate}
+                                            onPlaybackRateChange={setPlaybackRate}
+                                        />
                                     </div>
-                                </div>
 
-                                {/* Audio Player Component */}
-                                <AudioPlayer
-                                    url={selectedMode === 'backtrack' ? selectedSong?.backtrack_url || null : selectedSong?.cover_url || null}
-                                    isPlaying={isPlaying}
-                                    onPlayStateChange={setIsPlaying}
-                                    playbackRate={playbackRate}
-                                    onPlaybackRateChange={setPlaybackRate}
-                                />
-
-                                {/* Auto-scroll Controls (Moved from original player UI) */}
-                                <div className="mt-8 pt-8 border-t border-border-subtle">
-                                    <div className="flex items-center justify-between mb-4">
-                                        <span className="text-sm font-mono text-text-secondary">AUTO-SCROLL</span>
-                                        <button
-                                            onClick={toggleAutoScroll}
-                                            className={`
+                                    {/* Auto-scroll Controls (Moved from original player UI) */}
+                                    <div className="mt-8 pt-8 border-t border-border-subtle">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <span className="text-sm font-mono text-text-secondary">AUTO-SCROLL</span>
+                                            <button
+                                                onClick={toggleAutoScroll}
+                                                className={`
                                                 w-12 h-6 rounded-full p-1 transition-colors duration-300
                                                 ${isAutoScrollEnabled ? 'bg-text-primary' : 'bg-bg-tertiary'}
                                             `}
-                                        >
-                                            <div className={`
+                                            >
+                                                <div className={`
                                                 w-4 h-4 rounded-full bg-bg-primary shadow-sm transition-transform duration-300
                                                 ${isAutoScrollEnabled ? 'translate-x-6' : 'translate-x-0'}
                                             `} />
-                                        </button>
-                                    </div>
+                                            </button>
+                                        </div>
 
-                                    <div className={`transition-opacity duration-300 ${isAutoScrollEnabled ? 'opacity-100' : 'opacity-30 pointer-events-none'}`}>
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-xs font-mono text-text-muted">SPEED</span>
-                                            <div className="flex items-center gap-4">
-                                                <button
-                                                    onClick={() => adjustSpeed(-0.1)}
-                                                    className="w-8 h-8 rounded border border-border-subtle flex items-center justify-center hover:bg-bg-tertiary"
-                                                >
-                                                    -
-                                                </button>
-                                                <span className="font-mono w-12 text-center">{scrollSpeed.toFixed(1)}</span>
-                                                <button
-                                                    onClick={() => adjustSpeed(0.1)}
-                                                    className="w-8 h-8 rounded border border-border-subtle flex items-center justify-center hover:bg-bg-tertiary"
-                                                >
-                                                    +
-                                                </button>
+                                        <div className={`transition-opacity duration-300 ${isAutoScrollEnabled ? 'opacity-100' : 'opacity-30 pointer-events-none'}`}>
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-xs font-mono text-text-muted">SPEED</span>
+                                                <div className="flex items-center gap-4">
+                                                    <button
+                                                        onClick={() => adjustSpeed(-0.1)}
+                                                        className="w-8 h-8 rounded border border-border-subtle flex items-center justify-center hover:bg-bg-tertiary"
+                                                    >
+                                                        -
+                                                    </button>
+                                                    <span className="font-mono w-12 text-center">{scrollSpeed.toFixed(1)}</span>
+                                                    <button
+                                                        onClick={() => adjustSpeed(0.1)}
+                                                        className="w-8 h-8 rounded border border-border-subtle flex items-center justify-center hover:bg-bg-tertiary"
+                                                    >
+                                                        +
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
 
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </Panel>
+
+            {/* Mini Player Overlay */}
+            {showMiniPlayer && selectedSong && (
+                <MiniPlayer
+                    title={selectedSong.title}
+                    composer={selectedSong.composer || 'Unknown Composer'}
+                    coverUrl={selectedSong.cover_url || null}
+                    isPlaying={isPlaying}
+                    onPlayPause={() => setIsPlaying(!isPlaying)}
+                    onExpand={() => {
+                        setIsFocusMode(false);
+                        setPlayerWidth(450);
+                    }}
+                    isTunerActive={isTunerActive}
+                    tunerNote={note}
+                    tunerCents={cents}
+                    onToggleTuner={toggleTuner}
+                />
+            )}
+
+            {/* Floating Controls (Focus Mode Only) */}
+            <div className="fixed top-4 right-4 z-50 flex flex-col items-end gap-3">
+                <button
+                    onClick={toggleFocusMode}
+                    className="p-3 rounded-full bg-bg-secondary/80 backdrop-blur-md border border-white/10 text-text-primary hover:bg-gold-primary hover:text-bg-primary transition-all shadow-xl"
+                    title={isFocusMode ? "Exit Focus Mode" : "Enter Focus Mode"}
+                >
+                    {isFocusMode ? <Minimize2 className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}
+                </button>
+            </div>
 
         </div>
     );

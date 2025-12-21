@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
+import Link from 'next/link';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
@@ -38,8 +39,15 @@ export default function LoginPage() {
     };
 
     return (
-        <Card className="p-6 space-y-6">
-            <form onSubmit={handleLogin} className="space-y-4">
+        <div className="min-h-screen flex items-center justify-center p-4">
+            <div className="w-full max-w-md">
+                <Card className="p-8 space-y-6">
+                    <div className="text-center space-y-2">
+                        <h1 className="text-3xl font-bold">Welcome Back</h1>
+                        <p className="text-text-secondary">Sign in to Violin Practice App</p>
+                    </div>
+
+                    <form onSubmit={handleLogin} className="space-y-4">
                 <Input
                     label="Email"
                     type="email"
@@ -67,6 +75,15 @@ export default function LoginPage() {
                     Sign In
                 </Button>
             </form>
-        </Card>
+
+            <div className="text-center text-sm text-text-secondary">
+                Don't have an account?{' '}
+                <Link href="/signup" className="text-text-primary hover:underline font-medium">
+                    Sign up
+                </Link>
+            </div>
+                </Card>
+            </div>
+        </div>
     );
 }

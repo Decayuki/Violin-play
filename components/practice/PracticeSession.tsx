@@ -14,9 +14,10 @@ import Link from 'next/link';
 
 interface PracticeSessionProps {
     song: SongWithDifficulty;
+    userId?: string;
 }
 
-export const PracticeSession = ({ song: initialSong }: PracticeSessionProps) => {
+export const PracticeSession = ({ song: initialSong, userId }: PracticeSessionProps) => {
     const searchParams = useSearchParams();
     const mode = (searchParams.get('mode') as 'backtrack' | 'cover') || 'backtrack';
 
@@ -40,7 +41,7 @@ export const PracticeSession = ({ song: initialSong }: PracticeSessionProps) => 
             {/* Main Sheet Area */}
             <div className="flex-1 relative bg-gray-900">
                 {song.pdf_url ? (
-                    <SheetViewer pdfUrl={song.pdf_url} />
+                    <SheetViewer pdfUrl={song.pdf_url} songId={song.id} userId={userId} />
                 ) : (
                     <div className="flex items-center justify-center h-full text-text-muted">
                         No sheet music available
@@ -97,6 +98,6 @@ export const PracticeSession = ({ song: initialSong }: PracticeSessionProps) => 
                     {/* Metronome / Tuner placeholders could go here */}
                 </div>
             </div>
-        </div>
+        </div >
     );
 };

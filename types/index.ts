@@ -51,6 +51,16 @@ export interface UserDifficulty {
     updated_at: string;
 }
 
+export interface Annotation {
+    id: string;
+    song_id: string;
+    user_id: string;
+    page_number: number;
+    data: Record<string, any>; // Fabric.js canvas JSON
+    created_at: string;
+    updated_at: string;
+}
+
 // Derived types
 export interface SongWithDifficulty extends Song {
     user_difficulty?: number | null;
