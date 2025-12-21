@@ -1,0 +1,17 @@
+# A string used to distinguish different Supabase projects on the same host. Defaults to the
+# working directory name when running `supabase init`.
+project_id = "violin-practice-app"
+
+[db]
+# Port to use for the local database URL.
+port = 54322
+# Port used by db diff and db reset commands to initialize the shadow database.
+shadow_port = 54320
+# The database major version to use. This has to be the same as your remote database's. Run `SHOW
+# server_version;` on the remote database to check.
+major_version = 15
+
+[api]
+# Port to use for the API URL.
+enabled = true
+port = 54321

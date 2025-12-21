@@ -23,20 +23,22 @@ export default async function PracticePage({ params }: PageProps) {
         redirect('/');
     }
 
-    // Fetch user difficulty
+    // Fetch user - redirect if not authenticated
     const { data: { user } } = await supabase.auth.getUser();
-    let userDifficulty = null;
-
-    if (user) {
-        const { data: ud } = await supabase
-            .from('user_difficulties')
-            .select('user_difficulty')
-            .eq('song_id', songId)
-            .eq('user_id', user.id)
-            .single();
-
-        if (ud) userDifficulty = ud.user_difficulty;
+    if (!user) {
+        redirect('/login');
     }
+
+    // Fetch user difficulty
+    let userDifficulty = null;
+    const { data: ud } = await supabase
+        .from('user_difficulties')
+        .select('user_difficulty')
+        .eq('song_id', songId)
+        .eq('user_id', user.id)
+        .single();
+
+    if (ud) userDifficulty = ud.user_difficulty;
 
     const songWithDifficulty = {
         ...song,
@@ -44,5 +46,5 @@ export default async function PracticePage({ params }: PageProps) {
         effective_difficulty: userDifficulty ?? song.base_difficulty
     };
 
-    return <PracticeSession song={songWithDifficulty} />;
+    return <PracticeSession song={songWithDifficulty} userId={user.id} />;
 }

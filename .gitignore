@@ -39,3 +39,23 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Supabase temporary files
+supabase/.temp/
+
+# Temporary SQL files and documentation
+*_INSTRUCTIONS.md
+*_SETUP.md
+VERIFY_*.sql
+CREATE_TEST_*.sql
+DEBUG_*.sql
+FIX_*.sql
+CHECK_*.sql
+MIGRATION_*.sql
+APPLY_*.sql
+
+# Launch scripts
+*.command
+
+# Raycast scripts (local development)
+scripts/raycast/
