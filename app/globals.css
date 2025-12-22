@@ -41,14 +41,13 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply rounded-lg;
-    background: linear-gradient(180deg, rgba(139, 36, 68, 0.4) 0%, rgba(212, 175, 55, 0.4) 100%);
+    @apply rounded-lg bg-gold-dark/30;
     border: 1px solid rgba(212, 175, 55, 0.2);
     transition: all 0.3s ease;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(180deg, rgba(139, 36, 68, 0.7) 0%, rgba(212, 175, 55, 0.7) 100%);
+    @apply bg-gold-primary/50;
     border-color: rgba(212, 175, 55, 0.5);
     box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
   }

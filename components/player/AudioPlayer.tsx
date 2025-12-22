@@ -168,16 +168,16 @@ export default function AudioPlayer({
                     isPlaying ? "rotate-[25deg]" : "rotate-0"
                 )}>
                     {/* Pivot Base */}
-                    <div className="absolute -top-3 -left-3 w-8 h-8 rounded-full shadow-lg border border-gold-primary/30 bg-gradient-to-br from-zinc-800 to-black flex items-center justify-center">
-                        <div className="w-3 h-3 bg-gold-primary rounded-full shadow-[0_0_10px_rgba(234,179,8,0.5)]" />
+                    <div className="absolute -top-3 -left-3 w-8 h-8 rounded-full shadow-lg border border-bordeaux-primary/30 bg-gradient-to-br from-zinc-800 to-black flex items-center justify-center">
+                        <div className="w-3 h-3 bg-bordeaux-primary rounded-full shadow-[0_0_10px_rgba(107,25,50,0.5)]" />
                     </div>
 
-                    {/* Arm Detail (Gold Accent) */}
+                    {/* Arm Detail (Bordeaux Accent) */}
                     <div className="absolute top-0 left-1/2 -translate-x-1/2 w-0.5 h-full bg-white/5" />
 
                     {/* Head/Needle */}
-                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-6 bg-zinc-900 rounded-sm shadow-md border border-gold-primary/20 flex flex-col items-center justify-end pb-1">
-                        <div className="w-0.5 h-1.5 bg-gold-primary" />
+                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-6 bg-zinc-900 rounded-sm shadow-md border border-bordeaux-primary/20 flex flex-col items-center justify-end pb-1">
+                        <div className="w-0.5 h-1.5 bg-bordeaux-primary" />
                     </div>
                 </div>
             </div>
@@ -193,7 +193,7 @@ export default function AudioPlayer({
                         max={duration || 100}
                         value={currentTime}
                         onChange={handleSeek}
-                        className="w-full h-1 bg-bg-tertiary rounded-lg appearance-none cursor-pointer accent-gold-primary hover:accent-gold-light transition-all"
+                        className="w-full h-1 bg-bg-tertiary rounded-lg appearance-none cursor-pointer accent-bordeaux-primary hover:accent-bordeaux-light transition-all"
                     />
                     <div className="flex justify-between text-xs text-text-muted font-mono">
                         <span>{formatTime(currentTime)}</span>
@@ -229,7 +229,7 @@ export default function AudioPlayer({
                             onClick={() => setIsLooping(!isLooping)}
                             className={cn(
                                 "transition-colors",
-                                isLooping ? "text-gold-primary" : "text-text-muted hover:text-text-primary"
+                                isLooping ? "text-bordeaux-primary" : "text-text-muted hover:text-text-primary"
                             )}
                             title="Loop"
                         >
@@ -238,7 +238,7 @@ export default function AudioPlayer({
 
                         <button
                             onClick={togglePlay}
-                            className="w-14 h-14 rounded-full bg-gold-primary text-bg-primary flex items-center justify-center hover:bg-gold-light hover:scale-105 transition-all shadow-lg shadow-gold-primary/20"
+                            className="w-14 h-14 rounded-full bg-bordeaux-primary text-cream-primary flex items-center justify-center hover:bg-bordeaux-light hover:scale-105 transition-all shadow-lg shadow-bordeaux-primary/20"
                         >
                             {isPlaying ? (
                                 <Pause className="w-6 h-6 fill-current" />

@@ -34,17 +34,17 @@ export default function StyleSection() {
                 {/* Import from IMSLP Button */}
                 <Link
                     href="/import"
-                    className="group relative w-64 h-80 rounded-xl overflow-hidden border border-border-subtle hover:border-gold-primary hover:shadow-[0_0_30px_rgba(212,175,55,0.1)] transition-all duration-500"
+                    className="group relative w-64 h-80 rounded-xl overflow-hidden border border-border-subtle hover:border-bordeaux-primary hover:shadow-[0_0_30px_rgba(107,25,50,0.2)] transition-all duration-500"
                 >
                     {/* Background Gradient */}
                     <div className="absolute inset-0 bg-gradient-to-br from-green-900/80 to-emerald-900/80 opacity-60 group-hover:opacity-40 transition-opacity duration-500" />
 
                     {/* Content */}
                     <div className="absolute inset-0 flex flex-col items-center justify-center gap-6 p-6 z-10">
-                        <div className="w-20 h-20 rounded-full border border-gold-subtle bg-bg-secondary/50 backdrop-blur-sm text-gold-primary flex items-center justify-center transition-all duration-500 group-hover:scale-110">
+                        <div className="w-20 h-20 rounded-full border border-bordeaux-primary/40 bg-bg-secondary/50 backdrop-blur-sm text-bordeaux-light flex items-center justify-center transition-all duration-500 group-hover:scale-110">
                             <Download className="w-8 h-8" />
                         </div>
-                        <h3 className="text-2xl font-bold tracking-widest text-text-primary group-hover:text-gold-light transition-colors duration-300 text-center">
+                        <h3 className="text-2xl font-bold tracking-widest text-text-primary group-hover:text-bordeaux-light transition-colors duration-300 text-center">
                             IMPORT FROM<br />IMSLP
                         </h3>
                         <p className="text-xs text-text-secondary text-center">
@@ -53,7 +53,7 @@ export default function StyleSection() {
                     </div>
 
                     {/* Decorative Lines */}
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-gold-primary to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-bordeaux-primary to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 </Link>
 
                 {styles.map((style) => {
@@ -65,8 +65,8 @@ export default function StyleSection() {
                             className={`
                                 group relative w-64 h-80 rounded-xl overflow-hidden border transition-all duration-500
                                 ${isActive
-                                    ? 'border-gold-primary shadow-[0_0_30px_rgba(212,175,55,0.3)] scale-105'
-                                    : 'border-border-subtle hover:border-gold-primary hover:shadow-[0_0_30px_rgba(212,175,55,0.1)]'
+                                    ? 'border-bordeaux-primary shadow-[0_0_30px_rgba(107,25,50,0.3)] scale-105'
+                                    : 'border-border-subtle hover:border-bordeaux-primary hover:shadow-[0_0_30px_rgba(107,25,50,0.2)]'
                                 }
                             `}
                         >
@@ -80,22 +80,22 @@ export default function StyleSection() {
                             <div className={`absolute inset-0 bg-gradient-to-br ${style.color} opacity-60 group-hover:opacity-40 transition-opacity duration-500`} />
 
                             {/* Active Indicator Overlay */}
-                            {isActive && <div className="absolute inset-0 bg-gold-primary/10" />}
+                            {isActive && <div className="absolute inset-0 bg-bordeaux-primary/10" />}
 
                             {/* Content */}
                             <div className="absolute inset-0 flex flex-col items-center justify-center gap-6 p-6 z-10">
                                 <div className={`
                                     w-20 h-20 rounded-full border flex items-center justify-center transition-all duration-500
                                     ${isActive
-                                        ? 'border-gold-primary bg-gold-primary/20 text-gold-primary scale-110'
-                                        : 'border-gold-subtle bg-bg-secondary/50 backdrop-blur-sm text-gold-primary group-hover:scale-110'
+                                        ? 'border-bordeaux-primary bg-bordeaux-primary/20 text-bordeaux-light scale-110'
+                                        : 'border-bordeaux-primary/40 bg-bg-secondary/50 backdrop-blur-sm text-bordeaux-light group-hover:scale-110'
                                     }
                                 `}>
                                     {style.icon}
                                 </div>
                                 <h3 className={`
                                     text-2xl font-bold tracking-widest transition-colors duration-300
-                                    ${isActive ? 'text-gold-primary' : 'text-text-primary group-hover:text-gold-light'}
+                                    ${isActive ? 'text-bordeaux-light' : 'text-text-primary group-hover:text-bordeaux-light'}
                                 `}>
                                     {style.name.toUpperCase()}
                                 </h3>
@@ -103,7 +103,7 @@ export default function StyleSection() {
 
                             {/* Decorative Lines */}
                             <div className={`
-                                absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-gold-primary to-transparent transition-opacity duration-500
+                                absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-bordeaux-primary to-transparent transition-opacity duration-500
                                 ${isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}
                             `} />
                         </button>

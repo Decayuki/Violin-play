@@ -60,7 +60,7 @@ export default async function HomePage({
                     <div className="absolute inset-0 bg-gradient-to-b from-transparent via-bg-primary/90 to-bg-primary" />
 
                     <div className="container mx-auto px-4 relative z-10">
-                        <h2 className="text-5xl md:text-7xl font-bold text-text-primary mb-12 text-center tracking-widest drop-shadow-lg uppercase">
+                        <h2 className="text-5xl md:text-7xl font-bold font-display bg-gradient-to-r from-bordeaux-light via-gold-primary to-gold-light bg-clip-text text-transparent mb-12 text-center tracking-widest drop-shadow-lg uppercase">
                             EXPLORE LIBRARY
                         </h2>
 

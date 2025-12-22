@@ -19,7 +19,7 @@ export default function LessonSection() {
                     <div className="h-48 bg-bg-tertiary relative overflow-hidden">
                         <div className="absolute inset-0 bg-gradient-to-t from-bg-secondary to-transparent opacity-80" />
                         <div className="absolute bottom-4 left-4 flex items-center gap-2">
-                            <span className="px-2 py-1 bg-gold-primary/20 text-gold-light text-xs font-mono rounded border border-gold-subtle">
+                            <span className="px-2 py-1 bg-bordeaux-primary/20 text-bordeaux-light text-xs font-mono rounded border border-bordeaux-primary/30">
                                 {lesson.level.toUpperCase()}
                             </span>
                             <span className="flex items-center gap-1 text-xs font-mono text-text-secondary">
