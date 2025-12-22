@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils/cn";
-import { GripVertical, ChevronLeft, ChevronRight, Music2, Maximize2, Minimize2, Mic2, PlayCircle, Layers, Mic, MicOff, Search, Heart } from 'lucide-react';
+import { GripVertical, ChevronLeft, ChevronRight, Music2, Maximize2, Minimize2, Mic2, PlayCircle, Layers, Mic, MicOff, Search, Heart, Youtube } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import SongCard from "@/components/ui/SongCard";
 import PdfViewer from "@/components/ui/PdfViewer";
@@ -10,8 +10,11 @@ import AudioPlayer from '../player/AudioPlayer';
 import MiniPlayer from '../player/MiniPlayer';
 import TunerWidget from '../tools/TunerWidget';
 import { SearchControls } from '../ui/SearchControls';
+import YouTubeAccompanimentSelector from '../practice/YouTubeAccompanimentSelector';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { useTuner } from '@/hooks/useTuner';
+import { useYouTubeAccompaniment } from '@/hooks/useYouTubeAccompaniment';
+import type { YouTubeVideo } from '@/types/imslp';
 
 // Types
 interface Song {
@@ -23,6 +26,9 @@ interface Song {
     cover_url: string | null;
     pdf_url: string | null;
     backtrack_url: string | null;
+    youtube_video_id?: string | null;
+    youtube_title?: string | null;
+    youtube_thumbnail?: string | null;
 }
 
 interface VerticalFlowProps {
@@ -35,7 +41,8 @@ export default function VerticalFlow({ songs }: VerticalFlowProps) {
     const [activePanel, setActivePanel] = useState<PanelId>(0);
     const [selectedLevel, setSelectedLevel] = useState<number | null>(null);
     const [selectedSong, setSelectedSong] = useState<Song | null>(null);
-    const [selectedMode, setSelectedMode] = useState<"backtrack" | "cover" | null>(null);
+    const [selectedMode, setSelectedMode] = useState<"backtrack" | "cover" | "youtube" | null>(null);
+    const [showYouTubeSelector, setShowYouTubeSelector] = useState(false);
 
     // Filters
     const [filterBacktrack, setFilterBacktrack] = useState(false);
@@ -211,9 +218,46 @@ export default function VerticalFlow({ songs }: VerticalFlowProps) {
         setIsPlaying(false); // Reset play state on new song
     };
 
-    const handleModeSelect = (mode: "backtrack" | "cover") => {
-        setSelectedMode(mode);
+    const handleModeSelect = (mode: "backtrack" | "cover" | "youtube") => {
+        if (mode === "youtube") {
+            setShowYouTubeSelector(true);
+            setSelectedMode(null); // Don't set mode yet, wait for YouTube selection
+        } else {
+            setSelectedMode(mode);
+            setActivePanel(3); // Move to Player
+        }
+    };
+
+    const handleYouTubeSelect = async (video: YouTubeVideo) => {
+        if (!selectedSong) return;
+
+        // Update local song state immediately (works without auth)
+        setSelectedSong(prev => prev ? ({
+            ...prev,
+            youtube_video_id: video.id,
+            youtube_title: video.title,
+            youtube_thumbnail: video.thumbnail,
+        } as Song) : null);
+
+        setSelectedMode("youtube");
+        setShowYouTubeSelector(false);
         setActivePanel(3); // Move to Player
+
+        // Try to save to database (optional, fails gracefully if not authenticated)
+        try {
+            const supabase = createClient();
+            await supabase
+                .from('songs')
+                .update({
+                    youtube_video_id: video.id,
+                    youtube_title: video.title,
+                    youtube_thumbnail: video.thumbnail,
+                })
+                .eq('id', selectedSong.id);
+        } catch (error) {
+            // Silently fail if not authenticated - video will still work in this session
+            console.log('Not authenticated - YouTube selection saved for this session only');
+        }
     };
 
     const togglePlay = () => {
@@ -381,24 +425,55 @@ export default function VerticalFlow({ songs }: VerticalFlowProps) {
             >
                 <div className="flex flex-col md:flex-row gap-8 items-center justify-center h-full p-8">
                     <button
-                        onClick={(e) => { e.stopPropagation(); handleModeSelect("backtrack"); }}
-                        className="w-full md:w-1/3 aspect-square border border-border-subtle hover:border-text-primary bg-bg-secondary flex flex-col items-center justify-center gap-4 transition-all group"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            if (selectedSong?.backtrack_url) handleModeSelect("backtrack");
+                        }}
+                        disabled={!selectedSong?.backtrack_url}
+                        className={`w-full md:w-1/4 aspect-square border flex flex-col items-center justify-center gap-4 transition-all group
+                            ${selectedSong?.backtrack_url
+                                ? 'border-border-subtle hover:border-text-primary bg-bg-secondary cursor-pointer'
+                                : 'border-border-subtle bg-bg-secondary/30 cursor-not-allowed opacity-50'
+                            }`}
                     >
-                        <Music2 className="w-12 h-12 text-text-muted group-hover:text-text-primary" />
+                        <Music2 className={`w-12 h-12 ${selectedSong?.backtrack_url ? 'text-text-muted group-hover:text-text-primary' : 'text-text-muted/30'}`} />
                         <div className="text-center">
-                            <h3 className="text-xl font-bold text-text-primary">PRACTICE</h3>
-                            <p className="text-sm text-text-secondary font-mono mt-1">Backtrack Only</p>
+                            <h3 className={`text-xl font-bold ${selectedSong?.backtrack_url ? 'text-text-primary' : 'text-text-muted/50'}`}>PRACTICE</h3>
+                            <p className="text-sm text-text-secondary font-mono mt-1">
+                                {selectedSong?.backtrack_url ? 'Backtrack Only' : 'Not Available'}
+                            </p>
                         </div>
                     </button>
 
                     <button
-                        onClick={(e) => { e.stopPropagation(); handleModeSelect("cover"); }}
-                        className="w-full md:w-1/3 aspect-square border border-border-subtle hover:border-text-primary bg-bg-secondary flex flex-col items-center justify-center gap-4 transition-all group"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            if (selectedSong?.cover_url) handleModeSelect("cover");
+                        }}
+                        disabled={!selectedSong?.cover_url}
+                        className={`w-full md:w-1/4 aspect-square border flex flex-col items-center justify-center gap-4 transition-all group
+                            ${selectedSong?.cover_url
+                                ? 'border-border-subtle hover:border-text-primary bg-bg-secondary cursor-pointer'
+                                : 'border-border-subtle bg-bg-secondary/30 cursor-not-allowed opacity-50'
+                            }`}
                     >
-                        <PlayCircle className="w-12 h-12 text-text-muted group-hover:text-text-primary" />
+                        <PlayCircle className={`w-12 h-12 ${selectedSong?.cover_url ? 'text-text-muted group-hover:text-text-primary' : 'text-text-muted/30'}`} />
                         <div className="text-center">
-                            <h3 className="text-xl font-bold text-text-primary">LISTEN</h3>
-                            <p className="text-sm text-text-secondary font-mono mt-1">Full Cover</p>
+                            <h3 className={`text-xl font-bold ${selectedSong?.cover_url ? 'text-text-primary' : 'text-text-muted/50'}`}>LISTEN</h3>
+                            <p className="text-sm text-text-secondary font-mono mt-1">
+                                {selectedSong?.cover_url ? 'Full Cover' : 'Not Available'}
+                            </p>
+                        </div>
+                    </button>
+
+                    <button
+                        onClick={(e) => { e.stopPropagation(); handleModeSelect("youtube"); }}
+                        className="w-full md:w-1/4 aspect-square border border-border-subtle hover:border-red-500 bg-bg-secondary flex flex-col items-center justify-center gap-4 transition-all group cursor-pointer"
+                    >
+                        <Youtube className="w-12 h-12 text-red-500 group-hover:text-red-400" />
+                        <div className="text-center">
+                            <h3 className="text-xl font-bold text-text-primary">YOUTUBE</h3>
+                            <p className="text-sm text-text-secondary font-mono mt-1">Find Accompaniment</p>
                         </div>
                     </button>
                 </div>
@@ -478,15 +553,33 @@ export default function VerticalFlow({ songs }: VerticalFlowProps) {
                                             <p className="text-md text-text-secondary font-mono">{selectedSong?.composer}</p>
                                         </div>
 
-                                        {/* Audio Player Component */}
-                                        <AudioPlayer
-                                            url={selectedMode === 'backtrack' ? selectedSong?.backtrack_url || null : selectedSong?.cover_url || null}
-                                            coverUrl={selectedSong?.cover_url || null}
-                                            isPlaying={isPlaying}
-                                            onPlayStateChange={setIsPlaying}
-                                            playbackRate={playbackRate}
-                                            onPlaybackRateChange={setPlaybackRate}
-                                        />
+                                        {/* Audio Player Component or YouTube Iframe */}
+                                        {selectedMode === 'youtube' && selectedSong?.youtube_video_id ? (
+                                            <div className="space-y-4">
+                                                <iframe
+                                                    width="100%"
+                                                    height="300"
+                                                    src={`https://www.youtube.com/embed/${selectedSong.youtube_video_id}`}
+                                                    title={selectedSong.youtube_title || 'YouTube accompaniment'}
+                                                    frameBorder="0"
+                                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                                    allowFullScreen
+                                                    className="rounded-lg"
+                                                />
+                                                <p className="text-xs text-text-secondary text-center">
+                                                    {selectedSong.youtube_title}
+                                                </p>
+                                            </div>
+                                        ) : (
+                                            <AudioPlayer
+                                                url={selectedMode === 'backtrack' ? selectedSong?.backtrack_url || null : selectedSong?.cover_url || null}
+                                                coverUrl={selectedSong?.cover_url || null}
+                                                isPlaying={isPlaying}
+                                                onPlayStateChange={setIsPlaying}
+                                                playbackRate={playbackRate}
+                                                onPlaybackRateChange={setPlaybackRate}
+                                            />
+                                        )}
                                     </div>
 
                                     {/* Auto-scroll Controls (Moved from original player UI) */}
@@ -565,6 +658,16 @@ export default function VerticalFlow({ songs }: VerticalFlowProps) {
                     {isFocusMode ? <Minimize2 className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}
                 </button>
             </div>
+
+            {/* YouTube Accompaniment Selector Modal */}
+            {showYouTubeSelector && selectedSong && (
+                <YouTubeAccompanimentSelector
+                    songTitle={selectedSong.title}
+                    composer={selectedSong.composer}
+                    onSelect={handleYouTubeSelect}
+                    onClose={() => setShowYouTubeSelector(false)}
+                />
+            )}
 
         </div>
     );

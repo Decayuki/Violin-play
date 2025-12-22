@@ -96,9 +96,18 @@ export const PracticeSession = ({ song: initialSong, userId }: PracticeSessionPr
                 )}
             >
                 <div className="p-4 border-b border-border-subtle">
-                    <Link href="/" className="text-xs text-text-secondary hover:text-text-primary mb-2 block">
-                        ← Back to Library
-                    </Link>
+                    <div className="flex items-center justify-between mb-2">
+                        <Link href="/" className="text-xs text-text-secondary hover:text-text-primary">
+                            ← Back to Library
+                        </Link>
+                        <button
+                            onClick={() => setShowYouTubeSelector(true)}
+                            className="p-1 hover:bg-bg-tertiary rounded transition-colors"
+                            title="Find YouTube accompaniment"
+                        >
+                            <Youtube className="w-4 h-4 text-red-500" />
+                        </button>
+                    </div>
                     <h2 className="font-bold text-lg leading-tight">{song.title}</h2>
                     <p className="text-sm text-text-secondary">{song.composer}</p>
                 </div>
