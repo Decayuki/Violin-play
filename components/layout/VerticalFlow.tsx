@@ -316,23 +316,56 @@ export default function VerticalFlow({ songs }: VerticalFlowProps) {
                 icon={<Layers className="w-6 h-6" />}
                 headerImage="/vignettes/tryBandeauSlider.png"
             >
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-8 max-w-4xl mx-auto w-full h-full content-center">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-8 max-w-4xl mx-auto w-full h-full content-center">
                     {[1, 2, 3, 4].map((level) => (
                         <button
                             key={level}
                             onClick={(e) => { e.stopPropagation(); handleLevelSelect(level); }}
-                            className={`
-                group relative flex flex-col items-center justify-center h-48 border border-border-subtle 
-                hover:border-text-primary transition-all duration-300 bg-bg-secondary/10 backdrop-blur-md
-                ${selectedLevel === level ? 'border-text-primary bg-bg-secondary/40 shadow-[0_0_30px_rgba(212,175,55,0.1)]' : ''}
-              `}
+                            className={cn(
+                                "group relative flex flex-col items-center justify-center h-52 rounded-2xl",
+                                "border-2 transition-all duration-500 backdrop-blur-xl overflow-hidden",
+                                "bg-bg-secondary/20",
+                                "hover:scale-[1.02] hover:shadow-elevated-lg",
+                                selectedLevel === level
+                                    ? 'border-gold-primary bg-gold-subtle shadow-glow-lg scale-[1.02]'
+                                    : 'border-border-subtle hover:border-gold-primary/50'
+                            )}
                         >
-                            <span className="text-6xl font-mono font-bold text-border-strong group-hover:text-text-primary transition-colors">
+                            {/* Background gradient overlay */}
+                            <div className={cn(
+                                "absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-10 transition-opacity duration-500",
+                                level === 1 && "from-difficulty-1 to-transparent",
+                                level === 2 && "from-difficulty-2 to-transparent",
+                                level === 3 && "from-difficulty-3 to-transparent",
+                                level === 4 && "from-difficulty-4 to-transparent",
+                                selectedLevel === level && "opacity-20"
+                            )} />
+
+                            {/* Level Number */}
+                            <span className={cn(
+                                "text-7xl font-display font-bold transition-all duration-300 relative z-10",
+                                "group-hover:scale-110",
+                                selectedLevel === level
+                                    ? "text-gold-primary drop-shadow-[0_0_20px_rgba(212,175,55,0.5)]"
+                                    : "text-text-muted group-hover:text-cream-primary"
+                            )}>
                                 {level}
                             </span>
-                            <span className="text-sm font-mono tracking-widest mt-2 text-text-secondary uppercase">
+
+                            {/* Level Label */}
+                            <span className={cn(
+                                "text-sm font-sans tracking-[0.3em] mt-3 uppercase font-medium transition-colors relative z-10",
+                                selectedLevel === level
+                                    ? "text-gold-light"
+                                    : "text-text-secondary group-hover:text-text-primary"
+                            )}>
                                 {level === 1 ? "Easy" : level === 2 ? "Medium" : level === 3 ? "Hard" : "Expert"}
                             </span>
+
+                            {/* Shimmer effect on selected */}
+                            {selectedLevel === level && (
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-gold-primary/10 to-transparent animate-shimmer" />
+                            )}
                         </button>
                     ))}
                 </div>
@@ -358,34 +391,42 @@ export default function VerticalFlow({ songs }: VerticalFlowProps) {
                     />
 
                     {/* Filter Toggles */}
-                    <div className="flex flex-wrap items-center justify-end gap-4 mb-6">
-                        <span className="text-xs font-mono text-text-muted uppercase tracking-widest mr-2">Filters:</span>
+                    <div className="flex flex-wrap items-center justify-end gap-3 mb-6">
+                        <span className="text-xs font-mono text-text-muted uppercase tracking-[0.2em] mr-2">Filters:</span>
 
                         {/* Backtrack Filter */}
                         <button
                             onClick={(e) => { e.stopPropagation(); setFilterBacktrack(!filterBacktrack); }}
-                            className={`
-                                flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold tracking-widest uppercase transition-all border
-                                ${filterBacktrack
-                                    ? 'bg-gold-primary/10 text-gold-primary border-gold-primary'
-                                    : 'bg-bg-tertiary text-text-secondary border-border-subtle hover:border-text-muted'}
-                            `}
+                            className={cn(
+                                "flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-sans font-semibold tracking-wide uppercase transition-all duration-300",
+                                "border backdrop-blur-sm",
+                                filterBacktrack
+                                    ? 'bg-gold-subtle text-gold-light border-gold-primary shadow-glow-sm'
+                                    : 'bg-bg-tertiary/50 text-text-secondary border-border-subtle hover:border-gold-primary/30 hover:text-text-primary'
+                            )}
                         >
-                            <div className={`w-2 h-2 rounded-full ${filterBacktrack ? 'bg-gold-primary animate-pulse' : 'bg-text-muted'}`} />
+                            <div className={cn(
+                                "w-2 h-2 rounded-full transition-all",
+                                filterBacktrack ? 'bg-gold-primary animate-pulse shadow-[0_0_8px_rgba(212,175,55,0.6)]' : 'bg-text-muted'
+                            )} />
                             Backtrack
                         </button>
 
                         {/* Cover Filter */}
                         <button
                             onClick={(e) => { e.stopPropagation(); setFilterCover(!filterCover); }}
-                            className={`
-                                flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold tracking-widest uppercase transition-all border
-                                ${filterCover
-                                    ? 'bg-gold-primary/10 text-gold-primary border-gold-primary'
-                                    : 'bg-bg-tertiary text-text-secondary border-border-subtle hover:border-text-muted'}
-                            `}
+                            className={cn(
+                                "flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-sans font-semibold tracking-wide uppercase transition-all duration-300",
+                                "border backdrop-blur-sm",
+                                filterCover
+                                    ? 'bg-gold-subtle text-gold-light border-gold-primary shadow-glow-sm'
+                                    : 'bg-bg-tertiary/50 text-text-secondary border-border-subtle hover:border-gold-primary/30 hover:text-text-primary'
+                            )}
                         >
-                            <div className={`w-2 h-2 rounded-full ${filterCover ? 'bg-gold-primary animate-pulse' : 'bg-text-muted'}`} />
+                            <div className={cn(
+                                "w-2 h-2 rounded-full transition-all",
+                                filterCover ? 'bg-gold-primary animate-pulse shadow-[0_0_8px_rgba(212,175,55,0.6)]' : 'bg-text-muted'
+                            )} />
                             Full Cover
                         </button>
                     </div>
@@ -430,16 +471,28 @@ export default function VerticalFlow({ songs }: VerticalFlowProps) {
                             if (selectedSong?.backtrack_url) handleModeSelect("backtrack");
                         }}
                         disabled={!selectedSong?.backtrack_url}
-                        className={`w-full md:w-1/4 aspect-square border flex flex-col items-center justify-center gap-4 transition-all group
-                            ${selectedSong?.backtrack_url
-                                ? 'border-border-subtle hover:border-text-primary bg-bg-secondary cursor-pointer'
-                                : 'border-border-subtle bg-bg-secondary/30 cursor-not-allowed opacity-50'
-                            }`}
+                        className={cn(
+                            "relative w-full md:w-1/4 aspect-square rounded-2xl overflow-hidden",
+                            "flex flex-col items-center justify-center gap-4 transition-all duration-500 group",
+                            "border-2 backdrop-blur-xl",
+                            selectedSong?.backtrack_url
+                                ? 'border-border-subtle hover:border-gold-primary/50 bg-bg-secondary/40 cursor-pointer hover:scale-105 hover:shadow-glow'
+                                : 'border-border-subtle/30 bg-bg-secondary/20 cursor-not-allowed opacity-40'
+                        )}
                     >
-                        <Music2 className={`w-12 h-12 ${selectedSong?.backtrack_url ? 'text-text-muted group-hover:text-text-primary' : 'text-text-muted/30'}`} />
-                        <div className="text-center">
-                            <h3 className={`text-xl font-bold ${selectedSong?.backtrack_url ? 'text-text-primary' : 'text-text-muted/50'}`}>PRACTICE</h3>
-                            <p className="text-sm text-text-secondary font-mono mt-1">
+                        <div className="absolute inset-0 bg-gradient-to-br from-bordeaux-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                        <Music2 className={cn(
+                            "w-14 h-14 transition-all duration-300 relative z-10",
+                            selectedSong?.backtrack_url
+                                ? 'text-text-muted group-hover:text-gold-primary group-hover:scale-110'
+                                : 'text-text-muted/30'
+                        )} />
+                        <div className="text-center relative z-10">
+                            <h3 className={cn(
+                                "text-xl font-display font-bold tracking-tight transition-colors",
+                                selectedSong?.backtrack_url ? 'text-text-primary group-hover:text-cream-primary' : 'text-text-muted/40'
+                            )}>PRACTICE</h3>
+                            <p className="text-sm text-text-secondary font-sans mt-2">
                                 {selectedSong?.backtrack_url ? 'Backtrack Only' : 'Not Available'}
                             </p>
                         </div>
@@ -451,16 +504,28 @@ export default function VerticalFlow({ songs }: VerticalFlowProps) {
                             if (selectedSong?.cover_url) handleModeSelect("cover");
                         }}
                         disabled={!selectedSong?.cover_url}
-                        className={`w-full md:w-1/4 aspect-square border flex flex-col items-center justify-center gap-4 transition-all group
-                            ${selectedSong?.cover_url
-                                ? 'border-border-subtle hover:border-text-primary bg-bg-secondary cursor-pointer'
-                                : 'border-border-subtle bg-bg-secondary/30 cursor-not-allowed opacity-50'
-                            }`}
+                        className={cn(
+                            "relative w-full md:w-1/4 aspect-square rounded-2xl overflow-hidden",
+                            "flex flex-col items-center justify-center gap-4 transition-all duration-500 group",
+                            "border-2 backdrop-blur-xl",
+                            selectedSong?.cover_url
+                                ? 'border-border-subtle hover:border-gold-primary/50 bg-bg-secondary/40 cursor-pointer hover:scale-105 hover:shadow-glow'
+                                : 'border-border-subtle/30 bg-bg-secondary/20 cursor-not-allowed opacity-40'
+                        )}
                     >
-                        <PlayCircle className={`w-12 h-12 ${selectedSong?.cover_url ? 'text-text-muted group-hover:text-text-primary' : 'text-text-muted/30'}`} />
-                        <div className="text-center">
-                            <h3 className={`text-xl font-bold ${selectedSong?.cover_url ? 'text-text-primary' : 'text-text-muted/50'}`}>LISTEN</h3>
-                            <p className="text-sm text-text-secondary font-mono mt-1">
+                        <div className="absolute inset-0 bg-gradient-to-br from-gold-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                        <PlayCircle className={cn(
+                            "w-14 h-14 transition-all duration-300 relative z-10",
+                            selectedSong?.cover_url
+                                ? 'text-text-muted group-hover:text-gold-primary group-hover:scale-110'
+                                : 'text-text-muted/30'
+                        )} />
+                        <div className="text-center relative z-10">
+                            <h3 className={cn(
+                                "text-xl font-display font-bold tracking-tight transition-colors",
+                                selectedSong?.cover_url ? 'text-text-primary group-hover:text-cream-primary' : 'text-text-muted/40'
+                            )}>LISTEN</h3>
+                            <p className="text-sm text-text-secondary font-sans mt-2">
                                 {selectedSong?.cover_url ? 'Full Cover' : 'Not Available'}
                             </p>
                         </div>
@@ -468,13 +533,20 @@ export default function VerticalFlow({ songs }: VerticalFlowProps) {
 
                     <button
                         onClick={(e) => { e.stopPropagation(); handleModeSelect("youtube"); }}
-                        className="w-full md:w-1/4 aspect-square border border-border-subtle hover:border-red-500 bg-bg-secondary flex flex-col items-center justify-center gap-4 transition-all group cursor-pointer"
+                        className={cn(
+                            "relative w-full md:w-1/4 aspect-square rounded-2xl overflow-hidden",
+                            "flex flex-col items-center justify-center gap-4 transition-all duration-500 group cursor-pointer",
+                            "border-2 border-vermillion-primary/30 hover:border-vermillion-primary bg-bg-secondary/40 backdrop-blur-xl",
+                            "hover:scale-105 hover:shadow-[0_0_30px_rgba(255,0,0,0.2)]"
+                        )}
                     >
-                        <Youtube className="w-12 h-12 text-red-500 group-hover:text-red-400" />
-                        <div className="text-center">
-                            <h3 className="text-xl font-bold text-text-primary">YOUTUBE</h3>
-                            <p className="text-sm text-text-secondary font-mono mt-1">Find Accompaniment</p>
+                        <div className="absolute inset-0 bg-gradient-to-br from-vermillion-primary/10 to-transparent opacity-50 group-hover:opacity-100 transition-opacity duration-500" />
+                        <Youtube className="w-14 h-14 text-vermillion-light group-hover:text-vermillion-primary group-hover:scale-110 transition-all duration-300 relative z-10" />
+                        <div className="text-center relative z-10">
+                            <h3 className="text-xl font-display font-bold tracking-tight text-text-primary group-hover:text-cream-primary transition-colors">YOUTUBE</h3>
+                            <p className="text-sm text-text-secondary font-sans mt-2">Find Accompaniment</p>
                         </div>
+                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-vermillion-primary/10 to-transparent opacity-0 group-hover:opacity-100 animate-shimmer" />
                     </button>
                 </div>
             </Panel>

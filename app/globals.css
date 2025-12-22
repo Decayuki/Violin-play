@@ -1,31 +1,106 @@
 @import "tailwindcss";
 @config "../tailwind.config.ts";
 
+/* Import distinctive Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
 @layer base {
   * {
     @apply border-border-subtle;
   }
 
   body {
-    @apply bg-bg-primary text-text-primary;
+    @apply bg-bg-primary text-text-primary font-sans;
+
+    /* Enhanced Concert Hall Background */
     background-image:
-      /* Subtle Grid - Increased visibility */
-      linear-gradient(to right, rgba(255, 255, 255, 0.08) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(255, 255, 255, 0.08) 1px, transparent 1px),
-      /* Diagonal Gold Line (mimicking the "Ark" line) */
-      linear-gradient(135deg, transparent 49.8%, rgba(212, 175, 55, 0.15) 49.9%, rgba(212, 175, 55, 0.4) 50%, rgba(212, 175, 55, 0.15) 50.1%, transparent 50.2%),
-      /* Ambient Lighting */
-      radial-gradient(circle at 50% 0%, rgba(212, 175, 55, 0.08) 0%, transparent 60%);
-    background-size:
-      40px 40px,
-      /* Grid size */
-      40px 40px,
-      /* Grid size */
-      100% 100%,
-      /* Diagonal */
-      100% 100%;
-    /* Ambient */
+      /* Fine grain texture for depth */
+      url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E"),
+      /* Subtle stage lighting from top */
+      radial-gradient(ellipse 120% 50% at 50% 0%, rgba(212, 175, 55, 0.06) 0%, transparent 50%),
+      /* Warm spotlight glow */
+      radial-gradient(circle at 80% 20%, rgba(212, 175, 55, 0.04) 0%, transparent 40%),
+      /* Bordeaux velvet accent */
+      radial-gradient(circle at 20% 80%, rgba(107, 25, 50, 0.03) 0%, transparent 40%),
+      /* Base gradient for depth */
+      linear-gradient(180deg, #050505 0%, #0a0a0a 100%);
+
     background-attachment: fixed;
-    /* Parallax-like feel */
+    background-size: 200px 200px, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
+  }
+
+  /* Scrollbar styling for elegance */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-bg-secondary;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gold-dark/30 rounded-lg;
+    transition: background-color 0.2s;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gold-primary/50;
+  }
+
+  /* Selection styling */
+  ::selection {
+    @apply bg-gold-primary/30 text-text-primary;
+  }
+
+  /* Focus states */
+  :focus-visible {
+    @apply outline-none ring-2 ring-gold-primary/50 ring-offset-2 ring-offset-bg-primary;
+  }
+}
+
+/* Utility classes for animations */
+@layer utilities {
+  .animate-stagger-1 {
+    animation-delay: 0.1s;
+  }
+
+  .animate-stagger-2 {
+    animation-delay: 0.2s;
+  }
+
+  .animate-stagger-3 {
+    animation-delay: 0.3s;
+  }
+
+  .animate-stagger-4 {
+    animation-delay: 0.4s;
+  }
+
+  .glass {
+    @apply bg-bg-secondary/40 backdrop-blur-xl border border-border-subtle/50;
+  }
+
+  .glass-gold {
+    @apply bg-gold-subtle backdrop-blur-xl border border-gold-primary/20;
+  }
+
+  /* Text effects */
+  .text-glow {
+    text-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+  }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-gold-light via-gold-primary to-gold-dark;
+  }
+
+  /* Hide scrollbar but keep functionality */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
   }
 }
