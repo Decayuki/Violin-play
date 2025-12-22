@@ -41,25 +41,26 @@ export async function GET(request: NextRequest) {
         const data = await response.json();
 
         // Parse results
-        const works: IMSLPWork[] = (data.query?.search || []).map((result: any) => {
-            const title = result.title;
-            const pageId = result.pageid;
+        const works: IMSLPWork[] = (data.query?.search || [])
+            .filter((result: any) => result.title) // Filter out results without titles
+            .map((result: any, index: number) => {
+                const title = result.title;
 
-            // Extract composer from title (IMSLP format: "Work Title (Composer, First)")
-            const composerMatch = title.match(/\(([^,]+),\s*[^)]+\)/);
-            const composer = composerMatch ? composerMatch[1] : 'Unknown Composer';
+                // Extract composer from title (IMSLP format: "Work Title (Composer, First)")
+                const composerMatch = title.match(/\(([^,]+),\s*[^)]+\)/);
+                const composer = composerMatch ? composerMatch[1] : 'Unknown Composer';
 
-            // Clean work title (remove composer part)
-            const cleanTitle = title.replace(/\s*\([^)]+\)\s*$/, '');
+                // Clean work title (remove composer part)
+                const cleanTitle = title.replace(/\s*\([^)]+\)\s*$/, '');
 
-            return {
-                id: pageId.toString(),
-                title: cleanTitle,
-                composer,
-                url: `https://imslp.org/wiki/${encodeURIComponent(title)}`,
-                description: result.snippet?.replace(/<[^>]*>/g, ''), // Remove HTML tags
-            };
-        });
+                return {
+                    id: result.pageid?.toString() || `imslp-${index}`,
+                    title: cleanTitle,
+                    composer,
+                    url: `https://imslp.org/wiki/${encodeURIComponent(title)}`,
+                    description: result.snippet?.replace(/<[^>]*>/g, ''), // Remove HTML tags
+                };
+            });
 
         const result: IMSLPSearchResult = {
             works,
