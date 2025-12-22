@@ -7,6 +7,9 @@ export interface Song {
     pdf_url: string | null;
     backtrack_url: string | null;
     cover_url: string | null;
+    youtube_video_id?: string | null;
+    youtube_title?: string | null;
+    youtube_thumbnail?: string | null;
     created_at: string;
     updated_at: string;
 }

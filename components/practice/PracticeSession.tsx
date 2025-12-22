@@ -6,11 +6,14 @@ import { SongWithDifficulty } from '@/types';
 import { SheetViewer } from './SheetViewer';
 import { AudioPlayer } from './AudioPlayer';
 import { DifficultyOverride } from './DifficultyOverride';
+import YouTubeAccompanimentSelector from './YouTubeAccompanimentSelector';
 import { useAppStore } from '@/lib/store/useAppStore';
+import { useYouTubeAccompaniment } from '@/hooks/useYouTubeAccompaniment';
 import { cn } from '@/lib/utils/cn';
 import { Button } from '@/components/ui/Button';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Youtube } from 'lucide-react';
 import Link from 'next/link';
+import type { YouTubeVideo } from '@/types/imslp';
 
 interface PracticeSessionProps {
     song: SongWithDifficulty;
@@ -23,9 +26,22 @@ export const PracticeSession = ({ song: initialSong, userId }: PracticeSessionPr
 
     const [song, setSong] = useState(initialSong);
     const [isSidebarOpen, setSidebarOpen] = useState(true);
+    const [showYouTubeSelector, setShowYouTubeSelector] = useState(false);
     const { setUserDifficulty } = useAppStore();
+    const { needsAccompaniment, saveAccompaniment } = useYouTubeAccompaniment(song);
 
     const audioUrl = mode === 'backtrack' ? song.backtrack_url : song.cover_url;
+
+    // Auto-show YouTube selector if no accompaniment
+    useEffect(() => {
+        if (needsAccompaniment && !showYouTubeSelector) {
+            // Show selector after a small delay (better UX)
+            const timer = setTimeout(() => {
+                setShowYouTubeSelector(true);
+            }, 1000);
+            return () => clearTimeout(timer);
+        }
+    }, [needsAccompaniment]);
 
     const handleDifficultyUpdate = (newDifficulty: number | null) => {
         setSong(prev => ({
@@ -34,6 +50,20 @@ export const PracticeSession = ({ song: initialSong, userId }: PracticeSessionPr
             effective_difficulty: newDifficulty ?? prev.base_difficulty
         }));
         setUserDifficulty(song.id, newDifficulty);
+    };
+
+    const handleYouTubeSelect = async (video: YouTubeVideo) => {
+        const success = await saveAccompaniment(video);
+        if (success) {
+            // Update local song state
+            setSong(prev => ({
+                ...prev,
+                youtube_video_id: video.id,
+                youtube_title: video.title,
+                youtube_thumbnail: video.thumbnail,
+            }));
+            setShowYouTubeSelector(false);
+        }
     };
 
     return (
@@ -81,9 +111,42 @@ export const PracticeSession = ({ song: initialSong, userId }: PracticeSessionPr
                             songTitle={song.title}
                             mode={mode}
                         />
+                    ) : song.youtube_video_id ? (
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                                <h3 className="text-sm font-medium">YouTube Accompaniment</h3>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setShowYouTubeSelector(true)}
+                                >
+                                    Change
+                                </Button>
+                            </div>
+                            <iframe
+                                width="100%"
+                                height="200"
+                                src={`https://www.youtube.com/embed/${song.youtube_video_id}`}
+                                title={song.youtube_title || 'YouTube accompaniment'}
+                                frameBorder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                                className="rounded-lg"
+                            />
+                        </div>
                     ) : (
-                        <div className="p-4 bg-bg-tertiary rounded-lg text-center text-sm text-text-muted">
-                            No audio available for {mode} mode
+                        <div className="p-4 bg-bg-tertiary rounded-lg text-center space-y-3">
+                            <p className="text-sm text-text-muted">
+                                No audio available for {mode} mode
+                            </p>
+                            <Button
+                                variant="secondary"
+                                size="sm"
+                                onClick={() => setShowYouTubeSelector(true)}
+                            >
+                                <Youtube className="w-4 h-4 mr-2" />
+                                Find YouTube Accompaniment
+                            </Button>
                         </div>
                     )}
 
@@ -98,6 +161,16 @@ export const PracticeSession = ({ song: initialSong, userId }: PracticeSessionPr
                     {/* Metronome / Tuner placeholders could go here */}
                 </div>
             </div>
+
+            {/* YouTube Accompaniment Selector Modal */}
+            {showYouTubeSelector && (
+                <YouTubeAccompanimentSelector
+                    songTitle={song.title}
+                    composer={song.composer}
+                    onSelect={handleYouTubeSelect}
+                    onClose={() => setShowYouTubeSelector(false)}
+                />
+            )}
         </div >
     );
 };
