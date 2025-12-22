@@ -29,23 +29,28 @@
     background-size: 200px 200px, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
   }
 
-  /* Scrollbar styling for elegance */
+  /* Scrollbar styling for elegance with bordeaux gradient */
   ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+    width: 12px;
+    height: 12px;
   }
 
   ::-webkit-scrollbar-track {
     @apply bg-bg-secondary;
+    border-left: 1px solid rgba(107, 25, 50, 0.1);
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply bg-gold-dark/30 rounded-lg;
-    transition: background-color 0.2s;
+    @apply rounded-lg;
+    background: linear-gradient(180deg, rgba(139, 36, 68, 0.4) 0%, rgba(212, 175, 55, 0.4) 100%);
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    transition: all 0.3s ease;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-gold-primary/50;
+    background: linear-gradient(180deg, rgba(139, 36, 68, 0.7) 0%, rgba(212, 175, 55, 0.7) 100%);
+    border-color: rgba(212, 175, 55, 0.5);
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
   }
 
   /* Selection styling */

@@ -66,7 +66,7 @@ export default async function HomePage({
 
                         {/* Style Slider */}
                         <div className="mb-12">
-                            <h3 className="text-xl font-mono text-gold-light mb-8 border-l-4 border-gold-primary pl-4 tracking-widest">
+                            <h3 className="text-xl font-display font-bold bg-gradient-to-r from-bordeaux-light via-gold-primary to-gold-light bg-clip-text text-transparent mb-8 border-l-4 border-bordeaux-primary pl-4 tracking-widest">
                                 BROWSE BY STYLE
                             </h3>
                             <StyleSection />
@@ -77,7 +77,7 @@ export default async function HomePage({
                 <div className="container mx-auto px-4 py-10">
                     {/* Lessons */}
                     <div>
-                        <h3 className="text-xl font-mono text-text-secondary mb-6 border-l-2 border-gold-primary pl-4">
+                        <h3 className="text-xl font-display font-bold bg-gradient-to-r from-bordeaux-light via-gold-primary to-gold-light bg-clip-text text-transparent mb-6 border-l-4 border-bordeaux-primary pl-4 tracking-widest">
                             TECHNIQUE & LESSONS
                         </h3>
                         <LessonSection />
