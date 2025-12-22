@@ -132,19 +132,22 @@ export default function AudioPlayer({
                 {/* Vinyl Record */}
                 <div
                     className={cn(
-                        "relative w-[90%] h-[90%] rounded-full bg-black shadow-xl border-[6px] border-[#111] flex items-center justify-center transition-transform",
+                        "relative w-[90%] h-[90%] rounded-full shadow-xl border-[6px] border-bordeaux-dark/30 flex items-center justify-center transition-transform",
                         isPlaying ? "animate-[spin_4s_linear_infinite]" : ""
                     )}
-                    style={{ animationPlayState: isPlaying ? 'running' : 'paused' }}
+                    style={{
+                        animationPlayState: isPlaying ? 'running' : 'paused',
+                        background: 'radial-gradient(circle at 30% 30%, #1a1a1a 0%, #0a0a0a 40%, #4A1022 100%)'
+                    }}
                 >
-                    {/* Vinyl Grooves (CSS Gradients) */}
-                    <div className="absolute inset-0 rounded-full bg-[repeating-radial-gradient(#111_0,#111_2px,#222_3px,#111_4px)] opacity-80" />
+                    {/* Vinyl Grooves (CSS Gradients) with Bordeaux tint */}
+                    <div className="absolute inset-0 rounded-full bg-[repeating-radial-gradient(#0a0a0a_0,#0a0a0a_2px,#1a1a1a_3px,#0a0a0a_4px)] opacity-80" />
 
-                    {/* Reflections */}
-                    <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-white/10 via-transparent to-white/5 pointer-events-none" />
+                    {/* Bordeaux Reflection */}
+                    <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-bordeaux-light/20 via-transparent to-bordeaux-primary/10 pointer-events-none" />
 
                     {/* Center Label / Cover */}
-                    <div className="w-[35%] h-[35%] rounded-full overflow-hidden relative z-10 border-4 border-[#111] shadow-inner bg-zinc-900 flex items-center justify-center">
+                    <div className="w-[35%] h-[35%] rounded-full overflow-hidden relative z-10 border-4 border-bordeaux-dark/40 shadow-inner bg-gradient-to-br from-zinc-900 to-bordeaux-dark/20 flex items-center justify-center">
                         <img
                             src={displayCover}
                             alt="Cover"
@@ -154,8 +157,8 @@ export default function AudioPlayer({
                             }}
                             className="w-full h-full object-cover"
                         />
-                        {/* Shine effect on label */}
-                        <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent pointer-events-none" />
+                        {/* Bordeaux shine effect on label */}
+                        <div className="absolute inset-0 bg-gradient-to-tr from-bordeaux-light/15 via-white/5 to-transparent pointer-events-none" />
                     </div>
                 </div>
 
