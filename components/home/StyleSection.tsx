@@ -1,8 +1,9 @@
 'use client';
 
 import React from 'react';
-import { Film, Music, Mic2, Guitar, Star } from 'lucide-react';
+import { Film, Music, Mic2, Guitar, Star, Download } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 
 const styles = [
     { id: 'film', name: 'Film Scores', icon: <Film className="w-8 h-8" />, color: 'from-purple-900/80 to-blue-900/80', image: '/vignettes/movieCat.png' },
@@ -30,6 +31,31 @@ export default function StyleSection() {
     return (
         <div className="w-full overflow-x-auto pb-8 scrollbar-hide">
             <div className="flex gap-6 min-w-max px-4">
+                {/* Import from IMSLP Button */}
+                <Link
+                    href="/import"
+                    className="group relative w-64 h-80 rounded-xl overflow-hidden border border-border-subtle hover:border-gold-primary hover:shadow-[0_0_30px_rgba(212,175,55,0.1)] transition-all duration-500"
+                >
+                    {/* Background Gradient */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-green-900/80 to-emerald-900/80 opacity-60 group-hover:opacity-40 transition-opacity duration-500" />
+
+                    {/* Content */}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-6 p-6 z-10">
+                        <div className="w-20 h-20 rounded-full border border-gold-subtle bg-bg-secondary/50 backdrop-blur-sm text-gold-primary flex items-center justify-center transition-all duration-500 group-hover:scale-110">
+                            <Download className="w-8 h-8" />
+                        </div>
+                        <h3 className="text-2xl font-bold tracking-widest text-text-primary group-hover:text-gold-light transition-colors duration-300 text-center">
+                            IMPORT FROM<br />IMSLP
+                        </h3>
+                        <p className="text-xs text-text-secondary text-center">
+                            Public domain sheet music
+                        </p>
+                    </div>
+
+                    {/* Decorative Lines */}
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-gold-primary to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                </Link>
+
                 {styles.map((style) => {
                     const isActive = currentStyle === style.id;
                     return (
