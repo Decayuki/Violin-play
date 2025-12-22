@@ -209,13 +209,19 @@ export default function VerticalFlow({ songs }: VerticalFlowProps) {
 
     const handleLevelSelect = (level: number) => {
         setSelectedLevel(level);
-        setActivePanel(1); // Move to Song selection
+        // Smooth transition to next panel after a short delay
+        setTimeout(() => {
+            setActivePanel(1);
+        }, 300);
     };
 
     const handleSongSelect = (song: Song) => {
         setSelectedSong(song);
-        setActivePanel(2); // Move to Mode selection
         setIsPlaying(false); // Reset play state on new song
+        // Smooth transition to next panel after a short delay
+        setTimeout(() => {
+            setActivePanel(2);
+        }, 300);
     };
 
     const handleModeSelect = (mode: "backtrack" | "cover" | "youtube") => {
@@ -224,7 +230,10 @@ export default function VerticalFlow({ songs }: VerticalFlowProps) {
             setSelectedMode(null); // Don't set mode yet, wait for YouTube selection
         } else {
             setSelectedMode(mode);
-            setActivePanel(3); // Move to Player
+            // Smooth transition to next panel after a short delay
+            setTimeout(() => {
+                setActivePanel(3);
+            }, 300);
         }
     };
 
@@ -241,7 +250,10 @@ export default function VerticalFlow({ songs }: VerticalFlowProps) {
 
         setSelectedMode("youtube");
         setShowYouTubeSelector(false);
-        setActivePanel(3); // Move to Player
+        // Smooth transition to next panel after a short delay
+        setTimeout(() => {
+            setActivePanel(3);
+        }, 300);
 
         // Try to save to database (optional, fails gracefully if not authenticated)
         try {
@@ -480,11 +492,11 @@ export default function VerticalFlow({ songs }: VerticalFlowProps) {
                                 : 'border-border-subtle/30 bg-bg-secondary/20 cursor-not-allowed opacity-40'
                         )}
                     >
-                        <div className="absolute inset-0 bg-gradient-to-br from-bordeaux-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                        <div className="absolute inset-0 bg-gradient-to-br from-bordeaux-light/20 via-bordeaux-primary/10 to-transparent opacity-30 group-hover:opacity-100 transition-opacity duration-500" />
                         <Music2 className={cn(
                             "w-14 h-14 transition-all duration-300 relative z-10",
                             selectedSong?.backtrack_url
-                                ? 'text-text-muted group-hover:text-gold-primary group-hover:scale-110'
+                                ? 'text-bordeaux-light group-hover:text-gold-primary group-hover:scale-110'
                                 : 'text-text-muted/30'
                         )} />
                         <div className="text-center relative z-10">
