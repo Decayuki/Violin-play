@@ -844,11 +844,13 @@ function Panel({
                 absolute inset-0 flex items-center justify-center transition-opacity duration-300
                 ${isActive ? 'opacity-0 invisible' : 'opacity-100 visible'}
             `}>
+                {/* Gradient Background: Black to Bordeaux */}
+                <div className="absolute inset-0 bg-gradient-to-b from-bg-primary via-bg-secondary to-bordeaux-dark/20" />
 
                 <div className="rotate-180 relative z-10" style={{ writingMode: 'vertical-rl' }}>
-                    <span className="text-xl font-bold tracking-widest uppercase text-text-muted whitespace-nowrap flex items-center gap-4">
+                    <span className="text-xl font-display font-bold tracking-widest uppercase bg-gradient-to-b from-text-muted via-bordeaux-light/80 to-bordeaux-primary bg-clip-text text-transparent whitespace-nowrap flex items-center gap-4">
                         {title}
-                        <span className="rotate-90">{icon}</span>
+                        <span className="rotate-90 text-bordeaux-light">{icon}</span>
                     </span>
                 </div>
             </div>
