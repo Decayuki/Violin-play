@@ -1,12 +1,9 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { SongWithDifficulty } from '@/types';
-import { SheetViewer } from './SheetViewer';
-import { AudioPlayer } from './AudioPlayer';
 import { DifficultyOverride } from './DifficultyOverride';
-import YouTubeAccompanimentSelector from './YouTubeAccompanimentSelector';
 import { useAppStore } from '@/lib/store/useAppStore';
 import { useYouTubeAccompaniment } from '@/hooks/useYouTubeAccompaniment';
 import { cn } from '@/lib/utils/cn';
@@ -14,6 +11,11 @@ import { Button } from '@/components/ui/Button';
 import { ChevronLeft, ChevronRight, Youtube } from 'lucide-react';
 import Link from 'next/link';
 import type { YouTubeVideo } from '@/types/imslp';
+
+// Lazy load heavy components
+const SheetViewer = lazy(() => import('./SheetViewer').then(mod => ({ default: mod.SheetViewer })));
+const AudioPlayer = lazy(() => import('./AudioPlayer').then(mod => ({ default: mod.AudioPlayer })));
+const YouTubeAccompanimentSelector = lazy(() => import('./YouTubeAccompanimentSelector'));
 
 interface PracticeSessionProps {
     song: SongWithDifficulty;
@@ -71,7 +73,13 @@ export const PracticeSession = ({ song: initialSong, userId }: PracticeSessionPr
             {/* Main Sheet Area */}
             <div className="flex-1 relative bg-gray-900">
                 {song.pdf_url ? (
-                    <SheetViewer pdfUrl={song.pdf_url} songId={song.id} userId={userId} />
+                    <Suspense fallback={
+                        <div className="flex items-center justify-center h-full">
+                            <div className="text-text-muted">Loading sheet music...</div>
+                        </div>
+                    }>
+                        <SheetViewer pdfUrl={song.pdf_url} songId={song.id} userId={userId} />
+                    </Suspense>
                 ) : (
                     <div className="flex items-center justify-center h-full text-text-muted">
                         No sheet music available
@@ -115,11 +123,13 @@ export const PracticeSession = ({ song: initialSong, userId }: PracticeSessionPr
                 <div className="flex-1 overflow-y-auto p-4 space-y-6">
                     {/* Audio Player */}
                     {audioUrl ? (
-                        <AudioPlayer
-                            audioUrl={audioUrl}
-                            songTitle={song.title}
-                            mode={mode}
-                        />
+                        <Suspense fallback={<div className="h-32 bg-bg-tertiary animate-pulse rounded-lg" />}>
+                            <AudioPlayer
+                                audioUrl={audioUrl}
+                                songTitle={song.title}
+                                mode={mode}
+                            />
+                        </Suspense>
                     ) : song.youtube_video_id ? (
                         <div className="space-y-3">
                             <div className="flex items-center justify-between">
@@ -173,12 +183,14 @@ export const PracticeSession = ({ song: initialSong, userId }: PracticeSessionPr
 
             {/* YouTube Accompaniment Selector Modal */}
             {showYouTubeSelector && (
-                <YouTubeAccompanimentSelector
-                    songTitle={song.title}
-                    composer={song.composer}
-                    onSelect={handleYouTubeSelect}
-                    onClose={() => setShowYouTubeSelector(false)}
-                />
+                <Suspense fallback={null}>
+                    <YouTubeAccompanimentSelector
+                        songTitle={song.title}
+                        composer={song.composer}
+                        onSelect={handleYouTubeSelect}
+                        onClose={() => setShowYouTubeSelector(false)}
+                    />
+                </Suspense>
             )}
         </div >
     );

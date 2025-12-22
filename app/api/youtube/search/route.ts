@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import type { YouTubeSearchResult, YouTubeVideo } from '@/types/imslp';
+import type { YouTubeSearchResponse, YouTubeVideosResponse, YouTubeSearchItem, YouTubeVideoItem } from '@/types/youtube-api';
 
 /**
  * YouTube Search API Route
@@ -51,10 +52,10 @@ export async function GET(request: NextRequest) {
             throw new Error(`YouTube API error: ${response.statusText}`);
         }
 
-        const data = await response.json();
+        const data: YouTubeSearchResponse = await response.json();
 
         // Get video durations (requires additional API call)
-        const videoIds = data.items?.map((item: any) => item.id.videoId).filter(Boolean) || [];
+        const videoIds = data.items?.map((item: YouTubeSearchItem) => item.id.videoId).filter(Boolean) || [];
 
         let durations: Record<string, string> = {};
         if (videoIds.length > 0) {
@@ -65,8 +66,8 @@ export async function GET(request: NextRequest) {
 
             const videosResponse = await fetch(videosUrl.toString());
             if (videosResponse.ok) {
-                const videosData = await videosResponse.json();
-                durations = videosData.items?.reduce((acc: any, item: any) => {
+                const videosData: YouTubeVideosResponse = await videosResponse.json();
+                durations = videosData.items?.reduce((acc: Record<string, string>, item: YouTubeVideoItem) => {
                     acc[item.id] = item.contentDetails.duration;
                     return acc;
                 }, {}) || {};
@@ -75,8 +76,8 @@ export async function GET(request: NextRequest) {
 
         // Parse results
         const videos: YouTubeVideo[] = (data.items || [])
-            .filter((item: any) => item.id.videoId) // Filter out non-video results
-            .map((item: any) => ({
+            .filter((item: YouTubeSearchItem) => item.id.videoId) // Filter out non-video results
+            .map((item: YouTubeSearchItem) => ({
                 id: item.id.videoId,
                 title: item.snippet.title,
                 channelTitle: item.snippet.channelTitle,
